@@ -8,7 +8,7 @@ export class UsersService {
     {
       userId: 1,
       username: 'john',
-      password: 'changeme', // In a real app, store hashed passwords
+      password: 'changeme', 
     },
     {
       userId: 2,
