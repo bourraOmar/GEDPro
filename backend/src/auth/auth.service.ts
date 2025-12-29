@@ -13,9 +13,10 @@ export class AuthService {
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOne(username);
     if (user) {
-      const isMatch = await bcrypt.compare(pass, user.password).catch(() => false);
-      if (isMatch || user.password === pass) {
-        const { password, ...result } = user;
+      const isMatch = await bcrypt.compare(pass, user.password);
+      if (isMatch) {
+        const userObj = (user as any).toObject ? (user as any).toObject() : user;
+        const { password, ...result } = userObj;
         return result;
       }
     }
@@ -23,7 +24,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+    const payload = { username: user.username, sub: user._Id };
     return {
       access_token: this.jwtService.sign(payload),
     };
@@ -33,12 +34,14 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(user.password, salt);
     const newUser = {
-      userId: Math.floor(Math.random() * 10000) + 1,
       username: user.username,
+      email: user.email,
       password: hashedPassword,
     };
     const createdUser = await this.usersService.create(newUser);
-    const { password, ...result } = createdUser;
+
+    const userObj = (createdUser as any).toObject ? (createdUser as any).toObject() : createdUser;
+    const { password, ...result } = userObj;
     return result;
   }
 }
